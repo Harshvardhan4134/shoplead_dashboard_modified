@@ -1,0 +1,458 @@
+/* Custom styles for light theme */
+/* Status Cards - Replaced with new styles */
+.stat-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    margin-bottom: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.stat-card h6 {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card h2 {
+    color: #0d6efd;
+    margin-bottom: 0;
+}
+
+/* Work Centers */
+.work-center-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.work-center-card .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem 1.25rem;
+}
+
+.work-center-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Calendar Styles */
+.calendar-container {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.fc-event {
+    border: none;
+    padding: 2px 4px;
+    margin: 1px 0;
+    cursor: pointer;
+}
+
+.fc-event-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Filter Section */
+.filter-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Progress Bars */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-normal { background-color: #28a745; color: white; }
+.status-high { background-color: #ffc107; color: black; }
+.status-overload { background-color: #dc3545; color: white; }
+
+/* Modal Styles */
+.detail-modal .modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.detail-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.detail-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .status-card {
+        margin-bottom: 1rem;
+    }
+
+    .metric-item {
+        padding: 0.25rem;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .detail-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1rem;
+}
+
+/* Table Styles */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+.table th {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+/* Dashboard Layout */
+.dashboard-item {
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.edit-mode {
+    border: 2px dashed #dee2e6;
+    cursor: move;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+.edit-mode:hover {
+    border-color: #007bff;
+    transform: scale(1.01);
+}
+
+.edit-mode-active .dashboard-item:not(.edit-mode) {
+    opacity: 0.7;
+}
+
+/* Edit Mode Button */
+#toggleEditMode.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+#toggleEditMode.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* File upload section */
+.import-zone {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 2rem;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.import-zone.dragover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: scale(1.02);
+}
+
+.import-zone.uploading {
+    background: #f8f9fa;
+    border-color: #28a745;
+}
+
+/* Calendar customization */
+#calendar {
+    height: auto; /* Changed from fixed height to auto for responsiveness */
+}
+
+/* General styles */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%; /* Ensure cards take full width on smaller screens */
+}
+
+.card-title {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+/* Progress bars */
+.progress {
+    height: 8px;
+    margin: 1rem 0;
+    background-color: #e9ecef; /* Ensure progress bars are responsive */
+    width: 100%; /* Ensure progress bars are responsive */
+}
+
+/* Chat overlay styles - Replaced with updated styles */
+.chat-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    z-index: 1050;
+    display: none;
+}
+
+.chat-overlay.active {
+    display: flex;
+}
+
+.chat-header {
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-footer {
+    padding: 10px 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #007bff;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 1049;
+}
+
+/* Edit overlay - Replaced with updated styles */
+.edit-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 1060;
+}
+
+.edit-overlay.active {
+    display: block;
+}
+
+.edit-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.edit-body {
+    padding: 20px;
+}
+
+.edit-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1050;
+    display: none;
+}
+
+.edit-backdrop.active {
+    display: block;
+}
+
+/* System/user message styles */
+.system-message {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 10px;
+    align-self: flex-start;
+    max-width: 80%;
+}
+
+.user-message {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    align-self: flex-end;
+    max-width: 80%;
+}
+
+/* Dashboard item in edit mode */
+.dashboard-item.edit-mode {
+    cursor: move;
+    border: 2px dashed #007bff;
+    position: relative;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 123, 255, 0.3);
+    cursor: nwse-resize;
+}
+
+/* Alert container */
+#alertContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    max-width: 350px;
+}
+
+.alert {
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Alert Styles */
+.alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.alert {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}

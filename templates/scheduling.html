@@ -1,0 +1,159 @@
+
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-calendar"></i> Production Schedule</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">Filters</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="workCenterFilter" class="form-label">Work Center</label>
+                                    <select id="workCenterFilter" class="form-select">
+                                        <option value="all">All Work Centers</option>
+                                        <!-- Work centers will be loaded here -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="statusFilter" class="form-label">Status</label>
+                                    <select id="statusFilter" class="form-select">
+                                        <option value="all">All Statuses</option>
+                                        <option value="Not Started">Not Started</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Delayed">Delayed</option>
+                                    </select>
+                                </div>
+                                <button id="applyFiltersBtn" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-filter"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header bg-light">Unscheduled Operations</div>
+                            <div class="card-body">
+                                <div id="unscheduledList" class="list-group">
+                                    <!-- Unscheduled operations will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-list"></i> Schedule List View</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Job</th>
+                                <th>Work Order</th>
+                                <th>Operation</th>
+                                <th>Work Center</th>
+                                <th>Scheduled Date</th>
+                                <th>Hours</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTable">
+                            <!-- Schedule will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Operation Details Modal -->
+<div class="modal fade" id="operationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-tasks"></i> Operation Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="operationForm">
+                    <input type="hidden" id="operationId">
+                    <div class="mb-3">
+                        <label for="jobNumber" class="form-label">Job Number</label>
+                        <input type="text" class="form-control" id="jobNumber" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workOrderNumber" class="form-label">Work Order</label>
+                        <input type="text" class="form-control" id="workOrderNumber" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="operationNumber" class="form-label">Operation</label>
+                        <input type="text" class="form-control" id="operationNumber" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workCenter" class="form-label">Work Center</label>
+                        <input type="text" class="form-control" id="workCenter" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scheduledDate" class="form-label">Scheduled Date</label>
+                        <input type="date" class="form-control" id="scheduledDate">
+                    </div>
+                    <div class="mb-3">
+                        <label for="plannedHours" class="form-label">Planned Hours</label>
+                        <input type="number" class="form-control" id="plannedHours" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="actualHours" class="form-label">Actual Hours</label>
+                        <input type="number" class="form-control" id="actualHours" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status">
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delayed">Delayed</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveOperationBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scheduling.js') }}"></script>
+{% endblock %}

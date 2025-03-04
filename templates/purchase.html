@@ -1,0 +1,91 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h3 class="mb-4">Purchase Dashboard</h3>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Open POs</h6>
+                    <h2 class="card-title" id="openPOCount">--</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Value</h6>
+                    <h2 class="card-title" id="totalValue">--</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Pending Deliveries</h6>
+                    <h2 class="card-title" id="pendingDeliveries">--</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Late Deliveries</h6>
+                    <h2 class="card-title" id="lateDeliveries">--</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Purchase Orders by Status</h5>
+                    <canvas id="poStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Delivery Timeline</h5>
+                    <canvas id="deliveryTimelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Orders Table -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Purchase Orders</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>PO Number</th>
+                            <th>Material</th>
+                            <th>Quantity</th>
+                            <th>Delivery Date</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchaseOrdersTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/purchase.js') }}"></script>
+{% endblock %}

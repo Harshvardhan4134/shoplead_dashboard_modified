@@ -1,0 +1,143 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-industry"></i> Work Centers Management</h5>
+                <button class="btn btn-sm btn-light" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Work Center</th>
+                                <th>Planned Hours</th>
+                                <th>Actual Hours</th>
+                                <th>Efficiency</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workCentersTable">
+                            <!-- Work centers will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-chart-bar"></i> Workload Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="workloadChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-chart-pie"></i> Efficiency Comparison</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="efficiencyChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Work Center Details Modal -->
+<div class="modal fade" id="workCenterModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-industry"></i> <span id="modalWorkCenterName"></span> Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">Performance Metrics</div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>Planned Hours:</th>
+                                        <td id="modalPlannedHours"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Actual Hours:</th>
+                                        <td id="modalActualHours"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Efficiency:</th>
+                                        <td id="modalEfficiency"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Capacity:</th>
+                                        <td id="modalCapacity"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Backlog:</th>
+                                        <td id="modalBacklog"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-light">Weekly Performance</div>
+                            <div class="card-body">
+                                <canvas id="weeklyPerformanceChart" width="100%" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Current Operations</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Job</th>
+                                        <th>Operation</th>
+                                        <th>Planned</th>
+                                        <th>Actual</th>
+                                        <th>Progress</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalOperationsTable">
+                                    <!-- Operations will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/work_centers.js') }}"></script>
+{% endblock %}
