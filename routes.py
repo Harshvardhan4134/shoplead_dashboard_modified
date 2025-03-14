@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import render_template, request, jsonify, Response, stream_with_context
 from app import app, db
-from models import Job, WorkOrder, Operation
+from models import Job, WorkOrder, Operation, WorkLog
 from utils import process_sapdata, calculate_forecast
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -39,41 +39,45 @@ def purchase():
 
 @app.route('/api/jobs')
 def get_jobs():
-    """Fetch all jobs with work orders & operations"""
-    jobs = Job.query.all()
-    logging.info(f"📌 Found {len(jobs)} jobs in database")
+    try:
+        job_number = request.args.get('job_number')
+        part = request.args.get('part')  # This refers to operation_number
 
-    result = [
-        {
-            'job_number': job.job_number,
-            'status': job.work_orders[0].operations[0].status if job.work_orders else "Unknown",
-            'start_date': job.work_orders[0].operations[0].scheduled_date.isoformat() if job.work_orders and job.work_orders[0].operations and job.work_orders[0].operations[0].scheduled_date else None,
-'due_date': job.work_orders[0].operations[0].completed_at.isoformat() if job.work_orders and job.work_orders[0].operations and job.work_orders[0].operations[0].completed_at else None,
+        query = Job.query
+        if job_number:
+            query = query.filter(Job.job_number == job_number)
 
-            'work_orders': [
-                {
-                    'work_order_number': wo.work_order_number,
-                    'operations': [
-                        {
-                            'operation_number': op.operation_number,
-                            'work_center': op.work_center,
-                            'planned_hours': op.planned_hours,
-                            'actual_hours': op.actual_hours,
-                            'status': op.status,
-                            'scheduled_date': op.scheduled_date.isoformat() if op.scheduled_date else None,
-                            'completed_at': op.completed_at.isoformat() if op.completed_at else None
-                        }
-                        for op in wo.operations
-                    ]
-                }
-                for wo in job.work_orders
-            ]
-        }
-        for job in jobs
-    ]
+        jobs = query.all()
 
-    logging.info(f"📌 API `/api/jobs` returned {len(result)} jobs")
-    return jsonify(result)
+        result = [
+            {
+                'job_number': job.job_number,
+                'customer_name': job.customer_name if job.customer_name else "Unknown Customer",
+                'work_orders': [
+                    {
+                        'work_order_number': wo.work_order_number,
+                        'operations': [
+                            {
+                                'operation_number': op.operation_number,
+                                'work_center': op.work_center,
+                                'planned_hours': op.planned_hours,
+                                'actual_hours': op.actual_hours,
+                                'status': op.status,
+                                'scheduled_date': op.scheduled_date.isoformat() if op.scheduled_date else None
+                            }
+                            for op in wo.operations if not part or str(op.operation_number) == part
+                        ]
+                    }
+                    for wo in job.work_orders
+                ]
+            }
+            for job in jobs
+        ]
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error fetching jobs: {str(e)}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
 
 @app.route('/api/work_centers')
 def get_work_centers():
@@ -131,33 +135,26 @@ def get_forecast():
 @app.route('/upload', methods=['POST'])
 def upload_sapdata():
     try:
-        logging.info("📂 Starting file upload process...")
-
         if 'file' not in request.files:
-            logging.error("❌ No file part in request")
             return jsonify({"error": "No file provided"}), 400
 
         file = request.files['file']
-        logging.info(f"📌 Received file: {file.filename}")
-
         if file.filename == '':
-            logging.error("❌ No selected file")
             return jsonify({"error": "No file selected"}), 400
 
         if not file.filename.endswith('.xlsx'):
-            logging.error(f"❌ Invalid file format: {file.filename}")
             return jsonify({"error": "Invalid file format. Please upload an Excel (.xlsx) file"}), 400
 
-        # Read Excel file directly from memory
-        df = pd.read_excel(file, engine='openpyxl')
-        
-        # Process the data immediately
-        process_sapdata(df)
-        
-        return jsonify({"status": "success", "message": "File uploaded and processed successfully."})
+        # Check if the file has already been uploaded
+        uploaded_files = [f.filename for f in os.listdir(app.config['UPLOAD_FOLDER'])]
+        if file.filename in uploaded_files:
+            return jsonify({"error": "File already uploaded"}), 400
 
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+        process_sapdata(pd.read_excel(file, engine='openpyxl'))
+        return jsonify({"status": "success", "message": "File uploaded and processed successfully."})
     except Exception as e:
-        logging.error(f"❌ Upload error: {str(e)}")
+        app.logger.error(f"Upload error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/schedule', methods=['GET', 'POST'])
@@ -171,14 +168,45 @@ def schedule():
             return jsonify({"status": "success"})
         return jsonify({"status": "error", "message": "Operation not found"}), 404
 
-    operations = Operation.query.filter(Operation.scheduled_date.isnot(None)).all()
-    events = [{
-        "id": op.id,
-        "title": f"{op.work_order.work_order_number} - Op {op.operation_number}",
-        "start": op.scheduled_date.isoformat(),
-        "work_center": op.work_center
-    } for op in operations]
-    return jsonify(events)
+    # Get today's date and next week's date range
+    today = datetime.today().date()
+    next_week = today + timedelta(days=7)
+
+    # Fetch scheduled operations for today and this week
+    daily_operations = Operation.query.filter(Operation.scheduled_date == today).all()
+    weekly_operations = Operation.query.filter(
+        Operation.scheduled_date > today, Operation.scheduled_date <= next_week
+    ).all()
+
+    # Structure data into separate lists for daily & weekly schedules
+    response_data = {
+        "daily_schedule": [
+            {
+                "id": op.id,
+                "title": f"{op.work_order.work_order_number} - Op {op.operation_number}",
+                "start": op.scheduled_date.isoformat(),
+                "work_center": op.work_center
+            }
+            for op in daily_operations
+        ],
+        "weekly_schedule": [
+            {
+                "id": op.id,
+                "title": f"{op.work_order.work_order_number} - Op {op.operation_number}",
+                "start": op.scheduled_date.isoformat(),
+                "work_center": op.work_center
+            }
+            for op in weekly_operations
+        ]
+    }
+
+    return jsonify(response_data)
+# work log code here 
+@app.route('/api/worklog', methods=['GET'])
+def get_worklog():
+    worklogs = WorkLog.query.all()
+    return jsonify([log.to_dict() for log in worklogs])
+
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -238,3 +266,55 @@ def chat():
         return jsonify({
             'response': "I'm sorry, I encountered an error processing your request."
         }), 500
+
+@app.route('/api/job_details')
+def get_job_details():
+    job_number = request.args.get('job_number')
+    if not job_number:
+        return jsonify({"error": "Missing job number"}), 400
+    
+    job = Job.query.filter_by(job_number=job_number).first()
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    
+    result = {
+        "job_number": job.job_number,
+        "customer_name": job.customer_name if job.customer_name else "Unknown Customer",
+        "work_orders": [
+            {
+                "work_order_number": wo.work_order_number,
+                "operations": [
+                    {
+                        "operation_number": op.operation_number,
+                        "description": getattr(op, "description", "No description"),
+                        "work_center": op.work_center,
+                        "planned_hours": op.planned_hours,
+                        "actual_hours": op.actual_hours,
+                        "status": op.status,
+                        "scheduled_date": op.scheduled_date.isoformat() if op.scheduled_date else None
+                    }
+                    for op in wo.operations
+                ]
+            }
+            for wo in job.work_orders
+        ]
+    }
+    return jsonify(result)
+
+@app.route('/api/update_schedule', methods=['POST'])
+def update_schedule():
+    try:
+        data = request.json
+        operation_id = data['operation_id']
+        new_date = data['new_date']
+
+        operation = Operation.query.get(operation_id)
+        if not operation:
+            return jsonify({"error": "Operation not found"}), 404
+
+        operation.scheduled_date = datetime.strptime(new_date, "%Y-%m-%d").date()
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Schedule updated successfully."})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

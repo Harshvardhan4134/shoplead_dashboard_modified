@@ -3,12 +3,15 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 import logging
+from flask_migrate import Migrate
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
+migrate = Migrate(app, db)  # Ensure this line exists
+
 
 # Configure app
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_key")

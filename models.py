@@ -5,6 +5,7 @@ from datetime import datetime
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     job_number = db.Column(db.String(50), unique=True, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)  # Ensure this field exists
     work_orders = db.relationship('WorkOrder', backref='job', lazy=True, cascade="all, delete-orphan")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -27,6 +28,7 @@ class Operation(db.Model):
     completed_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class WorkCenter(db.Model):
     __tablename__ = "work_center"  # Make sure this matches PostgreSQL
 
@@ -43,4 +45,29 @@ class WorkCenter(db.Model):
     projected_hours = db.Column(db.Float, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class WorkLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, nullable=False)
+    employee_name = db.Column(db.String(100), nullable=False)
+    job_number = db.Column(db.String(50), nullable=False)
+    work_order = db.Column(db.String(50), nullable=False)
+    operation_number = db.Column(db.Integer, nullable=False)
+    operation_description = db.Column(db.String(255), nullable=True)
+    actual_hours = db.Column(db.Float, nullable=False)
+    posting_date = db.Column(db.Date, nullable=False)
+    adjustment_text = db.Column(db.String(255), nullable=True)
+    non_prod_code = db.Column(db.String(50), nullable=True)
 
+    def to_dict(self):
+        return {
+            "employee_id": self.employee_id,
+            "employee_name": self.employee_name,
+            "job_number": self.job_number,
+            "work_order": self.work_order,
+            "operation_number": self.operation_number,
+            "operation_description": self.operation_description,
+            "actual_hours": self.actual_hours,
+            "posting_date": self.posting_date.isoformat(),
+            "adjustment_text": self.adjustment_text,
+            "non_prod_code": self.non_prod_code
+        }

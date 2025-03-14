@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import logging
+from app import db
+from models import WorkLog
 
 logger = logging.getLogger(__name__)
 
@@ -94,3 +96,25 @@ def process_sap_data(df):
     except Exception as e:
         logger.error(f"Error processing SAP data: {str(e)}")
         raise
+def process_worklog_data(file_path):
+    df = pd.read_excel(file_path, sheet_name='SAP Document Export')
+
+    # Convert column names to lowercase for consistency
+    df.columns = df.columns.str.strip().str.lower()
+
+    for _, row in df.iterrows():
+        worklog_entry = WorkLog(
+            employee_id=int(row["pernr"]),
+            employee_name=row["employeename"],
+            job_number=str(int(row["order"])) if pd.notna(row["order"]) else None,
+            work_order=str(int(row["operation"])) if pd.notna(row["operation"]) else None,
+            operation_number=int(row["operation"]),
+            operation_description=row["operation short text"],
+            actual_hours=float(row["acutal work"]),
+            posting_date=datetime.strptime(row["postingdate"], "%m/%d/%Y"),
+            adjustment_text=row["adjustment confirmation text"] if pd.notna(row["adjustment confirmation text"]) else None,
+            non_prod_code=row["nonprodcode"] if pd.notna(row["nonprodcode"]) else None
+        )
+        db.session.add(worklog_entry)
+
+    db.session.commit()
