@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>NCR Tracker</h2>
+    
+    <div class="alert alert-warning" id="ncrAlert" style="display: none;">
+        ⚠️ NCR operation detected! Click below to submit an NCR report.
+        <button class="btn btn-danger btn-sm" onclick="openNCRForm()">Submit NCR</button>
+    </div>
+
+    <h4>Recorded NCR Issues</h4>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>NCR #</th>
+                <th>Job Number</th>
+                <th>Work Order</th>
+                <th>Operation</th>
+                <th>Issue</th>
+                <th>Category</th>
+                <th>Hours</th>
+                <th>Financial Impact</th>
+            </tr>
+        </thead>
+        <tbody id="ncrTable"></tbody>
+    </table>
+</div>
+
+<!-- NCR Submission Modal -->
+<div class="modal fade" id="ncrModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit NCR Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ncrForm">
+                    <input type="hidden" id="jobNumber">
+                    <input type="hidden" id="workOrder">
+                    <input type="hidden" id="operationNumber">
+                    
+                    <div class="mb-3">
+                        <label for="ncrNumber" class="form-label">NCR Number</label>
+                        <input type="text" class="form-control" id="ncrNumber" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="issueDescription" class="form-label">Issue Description</label>
+                        <textarea class="form-control" id="issueDescription" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="issueCategory" class="form-label">Issue Category</label>
+                        <select class="form-select" id="issueCategory">
+                            <option>Material Defect</option>
+                            <option>Process Error</option>
+                            <option>Equipment Failure</option>
+                            <option>Operator Mistake</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rootCause" class="form-label">Root Cause</label>
+                        <textarea class="form-control" id="rootCause" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="correctiveAction" class="form-label">Corrective Action</label>
+                        <textarea class="form-control" id="correctiveAction" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="financialImpact" class="form-label">Financial Impact ($)</label>
+                        <input type="number" class="form-control" id="financialImpact">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitNCR()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ncr_tracker.js') }}"></script>
+{% endblock %}

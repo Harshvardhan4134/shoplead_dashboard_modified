@@ -71,3 +71,19 @@ class WorkLog(db.Model):
             "adjustment_text": self.adjustment_text,
             "non_prod_code": self.non_prod_code
         }
+
+class NCRTracker(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ncr_number = db.Column(db.String(50), unique=True, nullable=False)
+    job_number = db.Column(db.String(50), nullable=False)
+    work_order = db.Column(db.String(50), nullable=False)
+    operation_number = db.Column(db.Integer, nullable=False)
+    part_name = db.Column(db.String(100))
+    planned_hours = db.Column(db.Float, nullable=False)
+    actual_hours = db.Column(db.Float, nullable=False)
+    issue_description = db.Column(db.Text, nullable=False)
+    issue_category = db.Column(db.String(50), nullable=False)
+    root_cause = db.Column(db.Text, nullable=False)
+    corrective_action = db.Column(db.Text, nullable=False)
+    financial_impact = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

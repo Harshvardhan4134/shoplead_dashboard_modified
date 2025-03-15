@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import render_template, request, jsonify, Response, stream_with_context
 from app import app, db
-from models import Job, WorkOrder, Operation, WorkLog
+from models import Job, WorkOrder, Operation, WorkLog, NCRTracker
 from utils import process_sapdata, calculate_forecast
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -36,6 +36,10 @@ def work_centers():
 @app.route('/purchase')
 def purchase():
     return render_template('purchase.html')
+
+@app.route('/ncr_tracker')
+def ncr_tracker():
+    return render_template('ncr_tracker.html')
 
 @app.route('/api/jobs')
 def get_jobs():
@@ -318,3 +322,47 @@ def update_schedule():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/ncr_monitor', methods=['GET'])
+def check_ncr_operations():
+    """Detect work orders where an NCR operation has started (actual_hours > 0)."""
+    ncr_operations = Operation.query.filter(Operation.work_center == "NCR", Operation.actual_hours > 0).all()
+    
+    result = []
+    for op in ncr_operations:
+        ncr_data = {
+            "job_number": op.work_order.job.job_number,
+            "work_order": op.work_order.work_order_number,
+            "operation_number": op.operation_number,
+            "planned_hours": op.planned_hours,
+            "actual_hours": op.actual_hours
+        }
+        result.append(ncr_data)
+    
+    return jsonify(result)
+
+@app.route('/api/ncr_report', methods=['POST'])
+def submit_ncr():
+    """Allow users to submit an NCR report when an NCR event is detected."""
+    data = request.json
+    
+    new_ncr = NCRTracker(
+        ncr_number=data.get("ncr_number"),
+        job_number=data.get("job_number"),
+        work_order=data.get("work_order"),
+        operation_number=data.get("operation_number"),
+        part_name=data.get("part_name"),
+        planned_hours=data.get("planned_hours"),
+        actual_hours=data.get("actual_hours"),
+        issue_description=data.get("issue_description"),
+        issue_category=data.get("issue_category"),
+        root_cause=data.get("root_cause"),
+        corrective_action=data.get("corrective_action"),
+        financial_impact=data.get("financial_impact", 0.0)
+    )
+    
+    db.session.add(new_ncr)
+    db.session.commit()
+    
+    return jsonify({"message": "NCR report submitted successfully"}), 201
