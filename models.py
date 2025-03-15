@@ -86,4 +86,5 @@ class NCRTracker(db.Model):
     root_cause = db.Column(db.Text, nullable=False)
     corrective_action = db.Column(db.Text, nullable=False)
     financial_impact = db.Column(db.Float, default=0.0)
+    status = db.Column(db.String(20), default="Pending") 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -11,6 +11,7 @@ import logging
 from flask import jsonify
 import json
 from concurrent.futures import ThreadPoolExecutor
+from excel_processor import process_sap_data
 
 # Configure thread pool for background tasks
 executor = ThreadPoolExecutor(max_workers=3)
@@ -139,27 +140,43 @@ def get_forecast():
 @app.route('/upload', methods=['POST'])
 def upload_sapdata():
     try:
-        if 'file' not in request.files:
-            return jsonify({"error": "No file provided"}), 400
+        print("🚀 Upload function triggered")  # Debugging log
 
-        file = request.files['file']
-        if file.filename == '':
+        if 'file' not in request.files:
+            print("❌ No file part in request")
+            return jsonify({"error": "No file part in request"}), 400
+
+        file = request.files.get('file')
+
+        if file is None or file.filename == '':
+            print("❌ No file selected")
             return jsonify({"error": "No file selected"}), 400
 
-        if not file.filename.endswith('.xlsx'):
-            return jsonify({"error": "Invalid file format. Please upload an Excel (.xlsx) file"}), 400
+        print(f"📂 Received file: {file.filename}")
 
-        # Check if the file has already been uploaded
-        uploaded_files = [f.filename for f in os.listdir(app.config['UPLOAD_FOLDER'])]
-        if file.filename in uploaded_files:
-            return jsonify({"error": "File already uploaded"}), 400
+        uploads_dir = app.config.get("UPLOAD_FOLDER", "uploads")
+        print(f"📁 Saving to: {uploads_dir}")
 
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-        process_sapdata(pd.read_excel(file, engine='openpyxl'))
-        return jsonify({"status": "success", "message": "File uploaded and processed successfully."})
+        # Ensure upload directory exists
+        if not os.path.exists(uploads_dir):
+            print("📂 Creating uploads directory")
+            os.makedirs(uploads_dir, exist_ok=True)
+
+        filepath = os.path.join(uploads_dir, file.filename)
+        print(f"💾 Saving file to: {filepath}")
+
+        file.save(filepath)
+        print("✅ File saved successfully")
+
+        # Process the file
+        process_sap_data(filepath)
+
+        return jsonify({"status": "success", "message": "File uploaded"}), 200
+
     except Exception as e:
-        app.logger.error(f"Upload error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"❌ Error saving file: {e}")
+        return jsonify({"error": f"Error uploading file: {str(e)}"}), 500
+
 
 @app.route('/api/schedule', methods=['GET', 'POST'])
 def schedule():
@@ -323,6 +340,25 @@ def update_schedule():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# @app.route('/api/ncr_tracker', methods=['GET'])
+# def get_ncr_data():
+#     """Fetch all NCR-related records."""
+#     try:
+#         ncr_records = NCRTracker.query.all()
+#         result = [{
+#             "ncr_number": record.id,
+#             "job_number": record.job_number,
+#             "work_order_number": record.work_order_number,
+#             "operation_number": record.operation_number,
+#             "planned_hours": record.planned_hours,
+#             "actual_hours": record.actual_hours,
+#             "status": record.status,
+#             "created_at": record.created_at.strftime("%Y-%m-%d %H:%M:%S")
+#         } for record in ncr_records]
+
+#         return jsonify(result)
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/ncr_monitor', methods=['GET'])
 def check_ncr_operations():
@@ -366,3 +402,33 @@ def submit_ncr():
     db.session.commit()
     
     return jsonify({"message": "NCR report submitted successfully"}), 201
+
+
+@app.route('/api/ncr')
+def get_ncr_data():
+    try:
+        print("📡 Fetching NCR records from database...")  # Debug Log
+
+        ncr_entries = NCRTracker.query.all()
+
+        if not ncr_entries:
+            print("⚠️ No NCR records found in the database.")
+            return jsonify([])
+
+        data = [{
+            "ncr_number": ncr.ncr_number,
+            "job_number": ncr.job_number,
+            "work_order": ncr.work_order,
+            "operation_number": ncr.operation_number,
+            "planned_hours": ncr.planned_hours,
+            "actual_hours": ncr.actual_hours,
+            "issue_description": ncr.issue_description,
+            "status": ncr.status
+        } for ncr in ncr_entries]
+
+        print(f"✅ Returning {len(data)} NCR records.")  # Debug Log
+        return jsonify(data)
+
+    except Exception as e:
+        print(f"❌ Error fetching NCR data: {str(e)}")
+        return jsonify({"error": "Internal Server Error"}), 500
